@@ -55,28 +55,32 @@ void initSnake(snake_t *head, size_t size, int x, int y){
     head->controls = default_controls;
 }
 
-void go(snake_t *head){
+int go(snake_t *head){
     char ch = '@';
     mvprintw(head->y, head->x, " ");
     switch (head->direction)
     {
         case LEFT:
             mvprintw(head->y, --(head->x), "%c", ch);               
-            printf("%d", checkDirection(head));
+            checkDirection(head);
             break;
         case RIGHT:
             mvprintw(head->y, ++(head->x), "%c", ch);            
+            checkDirection(head);
             break;
         case UP:
             mvprintw(--(head->y), head->x, "%c", ch);            
+            checkDirection(head);
             break;
         case DOWN:
             mvprintw(++(head->y), head->x, "%c", ch);            
+            checkDirection(head);
             break; 
         default:
         break;
     } 
     refresh();
+    return 0;
 }
 
 void goTail(snake_t *head){
@@ -90,6 +94,11 @@ void goTail(snake_t *head){
     }
     head->tail[0].x = head->x;
     head->tail[0].y = head->y;
+}
+
+void goSnake(snake_t *head){
+    go(head);
+    goTail(head);
 }
 
 void changeDirection(snake_t* snake, const int32_t key){
@@ -132,8 +141,7 @@ int main(){
     int key_pressed = 0;
     while( key_pressed != STOP_GAME ) {
         key_pressed = getch(); 
-        go(snake);
-        goTail(snake);
+        goSnake(snake);
         timeout(500);
         changeDirection(snake, key_pressed);
     }
