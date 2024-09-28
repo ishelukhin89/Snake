@@ -3,7 +3,7 @@
 #include <ncurses.h>
 #include <time.h>
 
-enum { LEFT, UP, RIGHT, DOWN, STOP_GAME=KEY_F(10), CONTROLS=3 };
+enum { LEFT, UP, RIGHT, DOWN, STOP_GAME=KEY_F(10), CONTROLS=3, PAUSE_GAME=112 };
 
 enum { MAX_TAIL_SIZE=100, START_TAIL_SIZE=3, MAX_FOOD_SIZE=20, FOOD_EXPIRE_SECONDS=10 };
 
@@ -40,7 +40,7 @@ struct food{
     uint8_t enable;
 } food[MAX_FOOD_SIZE];
 
-_Bool checkTail(snake_t *head);
+_Bool isTail(snake_t *head);
 
 void initFood(struct food f[], size_t size){
     struct food init = {0,0,0,0,0};
@@ -161,7 +161,7 @@ void goTail(snake_t *head){
 
 void goSnake(snake_t *head){
     go(head);
-    if(!checkTail(head))
+    if(!isTail(head))
         goTail(head);
 }
 
@@ -178,11 +178,11 @@ void changeDirection(snake_t* snake, const int32_t key){
     }
 }
 
-_Bool checkTail(snake_t *head){
-    for(size_t i = head->tsize - 1; i > 0; i--){ 
+_Bool isTail(snake_t *head){
+    for(size_t i = head->tsize-1; i > 0; i--){ 
         if(head->y == head->tail[i].y && head->x == head->tail[i].x)
             return 1;
-        else if(head->y == head->tail[i].y && head->x == head->tail[i].x)
+        else if(head->y == head->tail[i].y & head->x == head->tail[i].x)
             return 1;
         else if(head->y == head->tail[i].y && head->x == head->tail[i].x)
             return 1;
@@ -192,22 +192,64 @@ _Bool checkTail(snake_t *head){
     return 0;
 }
 
+void printLevel(snake_t *head){
+    int max_x = 0, max_y = 0;
+    getmaxyx(stdscr, max_x, max_y);
+    mvprintw(5, max_x-10, "LEVEL: %d", head->tsize);
+}
+
+void printExit(snake_t *head){
+    int max_x = 0, max_y = 0;
+    getmaxyx(stdscr, max_x, max_y);
+    mvprintw(max_y/2, max_x/2 - 5, "Total level: %d", head->tsize);
+    refresh();
+    getchar();
+}
+
+void pause(){
+    int max_x = 0, max_y = 0;
+    getmaxyx(stdscr, max_x, max_y);
+    mvprintw(max_y/2, max_x/2 - 5, "Press P to continue");
+    while (getch() != PAUSE_GAME)
+    {}
+    mvprintw(max_y/2, max_x/2 - 5, "                   ");   
+}
+
 int main(){
     snake_t* snake = (snake_t*) malloc(sizeof(snake_t));
     initSnake(snake, START_TAIL_SIZE, 10, 10);
     initscr();
+    putFood(food, 10);
     keypad(stdscr, TRUE);
     raw();
     noecho();
     curs_set(FALSE);
     mvprintw(0, 0,"Use arrows for control. Press'F10' for EXIT");
-    timeout(0); 
+    
+    double DELAY = 0.1;
     int key_pressed = 0;
+    timeout(0);
     while( key_pressed != STOP_GAME ) {
+        clock_t begin = clock();
         key_pressed = getch(); 
         goSnake(snake);
         changeDirection(snake, key_pressed);
-        timeout(500);
+
+        if(key_pressed == PAUSE_GAME) pause();
+
+        refreshFood(food, 3);
+
+        if(haveEat(snake, food)){
+            addTail(snake);
+            printLevel(snake);
+            DELAY -= 0.009;
+        }
+
+        while (((double)clock() - begin) / CLOCKS_PER_SEC < DELAY)
+        {
+       
+        }
+        refresh();
     }
     free(snake->tail);
     free(snake);
