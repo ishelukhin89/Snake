@@ -182,12 +182,6 @@ _Bool isTail(snake_t *head){
     for(size_t i = head->tsize-1; i > 0; i--){ 
         if(head->y == head->tail[i].y && head->x == head->tail[i].x)
             return 1;
-        else if(head->y == head->tail[i].y & head->x == head->tail[i].x)
-            return 1;
-        else if(head->y == head->tail[i].y && head->x == head->tail[i].x)
-            return 1;
-        else if(head->y == head->tail[i].y && head->x == head->tail[i].x)
-            return 1;
     }
     return 0;
 }
