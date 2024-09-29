@@ -159,12 +159,6 @@ void goTail(snake_t *head){
     head->tail[0].y = head->y;
 }
 
-void goSnake(snake_t *head){
-    go(head);
-    if(!isTail(head))
-        goTail(head);
-}
-
 void changeDirection(snake_t* snake, const int32_t key){
     for(int i = 0; i < CONTROLS; i++){
         if (key == snake->controls[i].down)
@@ -179,7 +173,7 @@ void changeDirection(snake_t* snake, const int32_t key){
 }
 
 _Bool isTail(snake_t *head){
-    for(size_t i = head->tsize-1; i > 0; i--){ 
+    for(size_t i = head->tsize; i > 0; i--){ 
         if(head->y == head->tail[i].y && head->x == head->tail[i].x)
             return 1;
     }
@@ -226,7 +220,9 @@ int main(){
     while( key_pressed != STOP_GAME ) {
         clock_t begin = clock();
         key_pressed = getch(); 
-        goSnake(snake);
+        go(snake);
+        goTail(snake);
+        if(isTail(snake)) break;
         changeDirection(snake, key_pressed);
 
         if(key_pressed == PAUSE_GAME) pause();

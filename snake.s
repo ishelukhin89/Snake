@@ -877,7 +877,7 @@ LBB12_3:                                ;   in Loop: Header=BB12_1 Depth=1
 	tbnz	w8, #0, LBB12_5
 	b	LBB12_4
 LBB12_4:
-	mov	w8, #1                          ; =0x1
+	mov	w8, #0                          ; =0x0 Режим самопересечения включён
 	and	w8, w8, #0x1
 	and	w8, w8, #0x1
 	strb	w8, [sp, #31]
