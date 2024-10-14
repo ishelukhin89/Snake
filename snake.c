@@ -5,7 +5,7 @@
 
 enum { LEFT, UP, RIGHT, DOWN, STOP_GAME=KEY_F(10), CONTROLS=3, PAUSE_GAME=112 };
 
-enum { MAX_TAIL_SIZE=100, START_TAIL_SIZE=3, MAX_FOOD_SIZE=20, FOOD_EXPIRE_SECONDS=10 };
+enum { MAX_TAIL_SIZE=100, START_TAIL_SIZE=0, MAX_FOOD_SIZE=20, FOOD_EXPIRE_SECONDS=10 };
 
 struct control_buttons{
     int down;
@@ -183,7 +183,7 @@ _Bool isTail(snake_t *head){
 void printLevel(snake_t *head){
     int max_x = 0, max_y = 0;
     getmaxyx(stdscr, max_x, max_y);
-    mvprintw(5, max_x-10, "LEVEL: %d", head->tsize);
+    mvprintw(5, max_x-10, "HARVESTED: %d", head->tsize-1);
 }
 
 void printExit(snake_t *head){
@@ -203,7 +203,64 @@ void pause(){
     mvprintw(max_y/2, max_x/2 - 5, "                   ");   
 }
 
+void startMenu(){
+    initscr();
+    noecho();
+    curs_set(FALSE);
+    cbreak;
+
+    if(has_colors() == FALSE){
+        endwin();
+        printf("No colors\n");
+        exit(1);
+    }
+
+    start_color();
+    init_pair(1, COLOR_GREEN, COLOR_BLACK);
+    init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+
+    attron(COLOR_PAIR(1));
+    mvprintw(1, 1, "1. Start");
+    attroff(COLOR_PAIR(1));
+
+    attron(COLOR_PAIR(2));
+    mvprintw(3, 1, "2. Exit");
+    attroff(COLOR_PAIR(2));
+
+    attron(COLOR_PAIR(2));
+    mvprintw(10, 30, "     SNAKE     SNAKE     SNAKE     SNAKE");
+    attroff(COLOR_PAIR(2));
+
+    attron(COLOR_PAIR(1));
+    mvprintw(11, 35, "     SNAKE     SNAKE     SNAKE     SNAKE");
+    attron(COLOR_PAIR(1));
+
+    char ch = (int) NULL;
+    while(1){
+        ch = getch();
+        if(ch == '1'){
+            clear();
+            attron(COLOR_PAIR(2));
+            mvprintw(10, 50, "S N A K E");
+            attron(COLOR_PAIR(2));
+
+            attron(COLOR_PAIR(1));
+            mvprintw(20, 50, "Press anykey ...");
+            attron(COLOR_PAIR(1));
+            break;
+        }
+        else if(ch == '2'){
+            endwin();
+            exit(0);
+        }
+    }
+    refresh();
+    getch();
+    endwin();
+}
+
 int main(){
+    startMenu();
     snake_t* snake = (snake_t*) malloc(sizeof(snake_t));
     initSnake(snake, START_TAIL_SIZE, 10, 10);
     initscr();
@@ -212,9 +269,9 @@ int main(){
     raw();
     noecho();
     curs_set(FALSE);
-    mvprintw(0, 0,"Use arrows for control. Press'F10' for EXIT");
+    mvprintw(0, 0,"  Use arrows for control. Press'F10' for EXIT");
     
-    double DELAY = 0.1;
+    double DELAY = 0.3;
     int key_pressed = 0;
     timeout(0);
     while( key_pressed != STOP_GAME ) {
